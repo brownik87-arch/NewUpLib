@@ -1,5 +1,5 @@
 -- ══════════════════════════════════════════════════════════════
---  NewUp UI Library v5 | Фикс углов + Удобный ресайз
+--  NewUp UI Library v6 | ФИНАЛЬНЫЙ ФИКС УГЛОВ + Tab:Size()
 -- ══════════════════════════════════════════════════════════════
 local Library = {}
 local TweenService = game:GetService("TweenService")
@@ -53,7 +53,6 @@ local function applyTheme(name)
     end
 end
 function Library:SetTheme(name) applyTheme(name) end
-function Library:GetThemes() return Themes end
 
 -- Утилиты
 local function new(cls, props)
@@ -74,39 +73,6 @@ local sg = new("ScreenGui", {
     ZIndexBehavior = Enum.ZIndexBehavior.Sibling, IgnoreGuiInset = true, Parent = guiParent,
 })
 
--- Уведомления
-local notifStack = new("Frame", {
-    AnchorPoint = Vector2.new(1, 1), Position = UDim2.new(1, -20, 1, -20),
-    Size = UDim2.new(0, 280, 1, -40), BackgroundTransparency = 1, Parent = sg,
-})
-new("UIListLayout", {
-    SortOrder = Enum.SortOrder.LayoutOrder, VerticalAlignment = Enum.VerticalAlignment.Bottom,
-    HorizontalAlignment = Enum.HorizontalAlignment.Right, Padding = UDim.new(0, 8), Parent = notifStack,
-})
-
-function Library:Notify(title, content, duration)
-    duration = duration or 3
-    local T = CurrentTheme
-    local card = new("Frame", {Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundColor3 = T.bg, ClipsDescendants = true, Parent = notifStack})
-    corner(card, 10)
-    new("UIStroke", {Thickness = 1, ApplyStrokeMode = Enum.ApplyStrokeMode.Border, Color = T.stroke, Parent = card})
-    new("Frame", {Size = UDim2.new(0, 3, 1, 0), BackgroundColor3 = T.accent, BorderSizePixel = 0, Parent = card})
-    local pad = new("Frame", {Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, Parent = card})
-    new("UIPadding", {PaddingTop = UDim.new(0, 12), PaddingBottom = UDim.new(0, 12), PaddingLeft = UDim.new(0, 16), PaddingRight = UDim.new(0, 16), Parent = pad})
-    new("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 4), Parent = pad})
-    new("TextLabel", {Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, Font = Enum.Font.GothamBold, Text = title or "NewUp", TextSize = 14, TextColor3 = T.text, TextXAlignment = Enum.TextXAlignment.Left, TextWrapped = true, LayoutOrder = 1, Parent = pad})
-    new("TextLabel", {Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, Font = Enum.Font.Gotham, Text = content or "", TextSize = 12, TextColor3 = T.subtext, TextXAlignment = Enum.TextXAlignment.Left, TextWrapped = true, LayoutOrder = 2, Parent = pad})
-    card.Position = UDim2.new(1, 300, 0, 0)
-    tw(card, {Position = UDim2.new(0, 0, 0, 0)}, 0.25)
-    task.delay(duration, function()
-        if card and card.Parent then
-            tw(card, {Position = UDim2.new(1, 300, 0, 0)}, 0.22)
-            task.wait(0.25)
-            if card and card.Parent then card:Destroy() end
-        end
-    end)
-end
-
 -- CreateLib
 function Library.CreateLib(name, themeName)
     name = name or "NewUp"
@@ -121,16 +87,10 @@ function Library.CreateLib(name, themeName)
     setC(win, "BackgroundColor3", "bg")
     tstroke(win)
 
-    -- Сайдбар (теперь с закруглениями!)
+    -- Сайдбар (без собственных углов, их обрежет главное окно)
     local sidebar = new("Frame", {Size = UDim2.new(0, 150, 1, 0), BorderSizePixel = 0, Parent = win})
-    corner(sidebar, 12) -- Закругляем сайдбар, чтобы нижний левый угол был красивым
     setC(sidebar, "BackgroundColor3", "sidebar")
 
-    -- Заглушка, чтобы правые углы сайдбара были прямыми
-    local sbMask = new("Frame", {Position = UDim2.new(1, -12, 0, 0), Size = UDim2.new(0, 12, 1, 0), BorderSizePixel = 0, ZIndex = 2, Parent = sidebar})
-    setC(sbMask, "BackgroundColor3", "sidebar")
-
-    -- Разделитель (сдвинут вправо на 1 пиксель)
     local divider = new("Frame", {Position = UDim2.new(0, 150, 0, 0), Size = UDim2.new(0, 1, 1, 0), BorderSizePixel = 0, ZIndex = 3, Parent = win})
     setC(divider, "BackgroundColor3", "stroke")
 
@@ -143,16 +103,17 @@ function Library.CreateLib(name, themeName)
     new("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 2), Parent = tabList})
     new("UIPadding", {PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8), PaddingTop = UDim.new(0, 4), Parent = tabList})
 
-    -- Контент
+    -- Контент (Скролл-фрейм). ЕМУ ТОЖЕ ДАЁМ УГОЛ, ЧТОБЫ ОН НЕ ПЕРЕКРЫВАЛ НИЖНИЙ ПРАВЫЙ КРАЙ!
     local content = new("ScrollingFrame", {
         Position = UDim2.new(0, 151, 0, 0), Size = UDim2.new(1, -151, 1, 0),
         BackgroundTransparency = 1, BorderSizePixel = 0, ScrollBarThickness = 4,
         CanvasSize = UDim2.new(0, 0, 0, 0), AutomaticCanvasSize = Enum.AutomaticSize.Y, Parent = win, ZIndex = 1,
     })
+    corner(content, 12) -- ФИКС УГЛОВ
     setC(content, "ScrollBarImageColor3", "accent")
     new("UIPadding", {PaddingTop = UDim.new(0, 16), PaddingBottom = UDim.new(0, 16), PaddingLeft = UDim.new(0, 16), PaddingRight = UDim.new(0, 16), Parent = content})
 
-    -- Перетаскивание окна
+    -- Перетаскивание
     local drag, dragS, startP
     sidebar.InputBegan:Connect(function(i)
         if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
@@ -169,7 +130,7 @@ function Library.CreateLib(name, themeName)
         if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then drag = false end
     end)
 
-    -- Ресайз-хэндл (правый нижний угол)
+    -- Ресайз-хэндл
     local resizeHandle = new("TextButton", {
         AnchorPoint = Vector2.new(1, 1), Position = UDim2.new(1, -2, 1, -2),
         Size = UDim2.new(0, 18, 0, 18), BackgroundTransparency = 1,
@@ -193,13 +154,13 @@ function Library.CreateLib(name, themeName)
         if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then resizing = false end
     end)
 
-    -- API окна
+    -- API
     local Window = {}
     Window.IsOpen = true
     local allTabs = {}
     local lastSize = UDim2.new(0, 560, 0, 400)
 
-    -- ТА САМАЯ ФУНКЦИЯ РАЗМЕРА
+    -- ФУНКЦИЯ РАЗМЕРА (поддерживает строку "400x300")
     function Window:Size(sizeStr)
         if type(sizeStr) == "string" then
             local w, h = string.match(sizeStr, "(%d+)x(%d+)")
@@ -248,8 +209,7 @@ function Library.CreateLib(name, themeName)
         if #allTabs == 1 then selectTab(obj) end
 
         local Tab = {}
-        
-        -- Позволяем вызывать Size прямо из таба (как ты и просил)
+        -- ТА САМАЯ ФУНКЦИЯ ДЛЯ ТАБА
         function Tab:Size(str) Window:Size(str) end
 
         function Tab:NewSection(sectionName)
