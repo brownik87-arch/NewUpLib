@@ -1,5 +1,5 @@
 -- ══════════════════════════════════════════════════════════════
---  NewUp UI Library v9 | Фикс правого края + Tab.Size()
+--  NewUp UI Library v10 | ФИНАЛЬНЫЙ ФИКС ТЕКСТА И УГЛОВ
 -- ══════════════════════════════════════════════════════════════
 local Library = {}
 local TweenService = game:GetService("TweenService")
@@ -189,9 +189,10 @@ function Library.CreateLib(name, themeName)
         t.page.Visible = true
     end
 
-    function Window.SetTheme(themeName) applyTheme(themeName) end
+    function Window:SetTheme(themeName) applyTheme(themeName) end
     
-    function Window.NewTab(tabName)
+    -- ВОТ ТУТ ИСПРАВЛЕН ДВОЕТОЧИЕ, ЧТОБЫ ТЕКСТ БЫЛ ВИДЕН
+    function Window:NewTab(tabName)
         local btn = new("TextButton", {
             Size = UDim2.new(1, 0, 0, 32), Text = "  "..tabName, TextSize = 13,
             Font = Enum.Font.GothamMedium, TextXAlignment = Enum.TextXAlignment.Left,
@@ -216,7 +217,8 @@ function Library.CreateLib(name, themeName)
         -- Вызов размера через точку!
         function Tab.Size(str) Window.Size(str) end
 
-        function Tab.NewSection(sectionName)
+        -- ТУТ ТОЖЕ ДВОЕТОЧИЕ
+        function Tab:NewSection(sectionName)
             -- Ширина 1,-8 чтобы не вылезать за скроллбар
             local sec = new("Frame", {Size = UDim2.new(1, -8, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, Parent = page})
             corner(sec, 10)
@@ -229,7 +231,8 @@ function Library.CreateLib(name, themeName)
             setC(title, "TextColor3", "accent")
 
             local Section = {}
-            function Section.NewButton(text, desc, callback)
+            -- И ТУТ ДВОЕТОЧИЯ
+            function Section:NewButton(text, desc, callback)
                 local h = desc and 46 or 34
                 local b = new("TextButton", {Size = UDim2.new(1, 0, 0, h), Text = "", AutoButtonColor = false, Parent = inner})
                 corner(b, 8) 
@@ -252,7 +255,7 @@ function Library.CreateLib(name, themeName)
                 return b
             end
 
-            function Section.NewToggle(text, desc, callback)
+            function Section:NewToggle(text, desc, callback)
                 local state = false
                 local h = desc and 46 or 34
                 local f = new("Frame", {Size = UDim2.new(1, 0, 0, h), Parent = inner})
@@ -289,7 +292,7 @@ function Library.CreateLib(name, themeName)
                 return f
             end
 
-            function Section.NewSlider(text, desc, maxV, minV, callback)
+            function Section:NewSlider(text, desc, maxV, minV, callback)
                 maxV = maxV or 100; minV = minV or 0
                 local f = new("Frame", {Size = UDim2.new(1, 0, 0, 52), Parent = inner})
                 corner(f, 8) 
@@ -338,7 +341,7 @@ function Library.CreateLib(name, themeName)
                 return f
             end
 
-            function Section.NewLabel(text)
+            function Section:NewLabel(text)
                 local l = new("TextLabel", {Size = UDim2.new(1, 0, 0, 20), BackgroundTransparency = 1, Font = Enum.Font.Gotham, Text = text, TextSize = 12, TextXAlignment = Enum.TextXAlignment.Left, Parent = inner})
                 setC(l, "TextColor3", "subtext")
                 return l
@@ -349,7 +352,7 @@ function Library.CreateLib(name, themeName)
         return Tab
     end
 
-    function Window.Toggle()
+    function Window:Toggle()
         Window.IsOpen = not Window.IsOpen
         if Window.IsOpen then
             win.Visible = true
@@ -362,11 +365,11 @@ function Library.CreateLib(name, themeName)
             win.Visible = false
         end
     end
-    function Window.Destroy() sg:Destroy() end
+    function Window:Destroy() sg:Destroy() end
 
     UserInputService.InputBegan:Connect(function(i, gp)
         if gp then return end
-        if i.KeyCode == Enum.KeyCode.RightShift then Window.Toggle() end
+        if i.KeyCode == Enum.KeyCode.RightShift then Window:Toggle() end
     end)
 
     return Window
