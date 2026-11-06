@@ -1,5 +1,5 @@
 -- ══════════════════════════════════════════════════════════════
---  NewUp UI Library v8 | Круглые кнопки, вкладки и секции
+--  NewUp UI Library v9 | Фикс правого края + Tab.Size()
 -- ══════════════════════════════════════════════════════════════
 local Library = {}
 local TweenService = game:GetService("TweenService")
@@ -77,7 +77,6 @@ function Library.CreateLib(name, themeName)
     name = name or "NewUp"
     applyTheme(themeName or "Tem1")
 
-    -- Главное окно
     local win = new("Frame", {
         Name = "Window", AnchorPoint = Vector2.new(0.5, 0.5),
         Position = UDim2.new(0.5, 0, 0.5, 0), Size = UDim2.new(0, 560, 0, 400),
@@ -87,16 +86,13 @@ function Library.CreateLib(name, themeName)
     setC(win, "BackgroundColor3", "bg")
     tstroke(win)
 
-    -- Сайдбар
     local sidebar = new("Frame", {Size = UDim2.new(0, 150, 1, 0), BorderSizePixel = 0, Parent = win, ZIndex = 1})
     corner(sidebar, 12)
     setC(sidebar, "BackgroundColor3", "sidebar")
     
-    -- Маска, чтобы правые углы сайдбара были прямыми
     local sbMask = new("Frame", {Position = UDim2.new(1, -12, 0, 0), Size = UDim2.new(0, 12, 1, 0), BorderSizePixel = 0, ZIndex = 1, Parent = sidebar})
     setC(sbMask, "BackgroundColor3", "sidebar")
 
-    -- Разделитель (сделал чуть короче сверху и снизу)
     local divider = new("Frame", {Position = UDim2.new(0, 150, 0, 8), Size = UDim2.new(0, 1, 1, -16), BorderSizePixel = 0, ZIndex = 3, Parent = win})
     setC(divider, "BackgroundColor3", "stroke")
 
@@ -107,10 +103,9 @@ function Library.CreateLib(name, themeName)
 
     local tabList = new("Frame", {Position = UDim2.new(0, 0, 0, 62), Size = UDim2.new(1, 0, 1, -62), BackgroundTransparency = 1, ZIndex = 4, Parent = sidebar})
     new("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 4), Parent = tabList})
-    -- ДОБАВИЛ ОТСТУПЫ ПО 10 ПИКСЕЛЕЙ, ЧТОБЫ КНОПКИ БЫЛИ ПО ЦЕНТРУ И ВИДНЫ ЗАКРУГЛЕНИЯ
     new("UIPadding", {PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10), PaddingTop = UDim.new(0, 4), Parent = tabList})
 
-    -- Контент (Скролл-фрейм)
+    -- Контент
     local content = new("ScrollingFrame", {
         Position = UDim2.new(0, 151, 0, 0), Size = UDim2.new(1, -151, 1, 0),
         BackgroundTransparency = 1, BorderSizePixel = 0, ScrollBarThickness = 4,
@@ -119,7 +114,8 @@ function Library.CreateLib(name, themeName)
     })
     corner(content, 12) 
     setC(content, "ScrollBarImageColor3", "accent")
-    new("UIPadding", {PaddingTop = UDim.new(0, 16), PaddingBottom = UDim.new(0, 16), PaddingLeft = UDim.new(0, 16), PaddingRight = UDim.new(0, 16), Parent = content})
+    -- Увеличиваем правый отступ, чтобы секции не прилипали к скроллбару
+    new("UIPadding", {PaddingTop = UDim.new(0, 16), PaddingBottom = UDim.new(0, 16), PaddingLeft = UDim.new(0, 16), PaddingRight = UDim.new(0, 24), Parent = content})
 
     -- Перетаскивание
     local drag, dragS, startP
@@ -168,7 +164,8 @@ function Library.CreateLib(name, themeName)
     local allTabs = {}
     local lastSize = UDim2.new(0, 560, 0, 400)
 
-    function Window:Size(sizeStr)
+    -- Изменение размера (через точку)
+    function Window.Size(sizeStr)
         if type(sizeStr) == "string" then
             local w, h = string.match(sizeStr, "(%d+)x(%d+)")
             if w and h then
@@ -192,15 +189,14 @@ function Library.CreateLib(name, themeName)
         t.page.Visible = true
     end
 
-    function Window:SetTheme(themeName) applyTheme(themeName) end
+    function Window.SetTheme(themeName) applyTheme(themeName) end
     
-    function Window:NewTab(tabName)
+    function Window.NewTab(tabName)
         local btn = new("TextButton", {
             Size = UDim2.new(1, 0, 0, 32), Text = "  "..tabName, TextSize = 13,
             Font = Enum.Font.GothamMedium, TextXAlignment = Enum.TextXAlignment.Left,
             AutoButtonColor = false, Parent = tabList,
         })
-        -- ТЕ САМЫЕ ЗАКРУГЛЕНИЯ ДЛЯ КНОПОК (8 пикселей)
         corner(btn, 8) 
         setC(btn, "BackgroundColor3", "sidebar")
         setC(btn, "TextColor3", "subtext")
@@ -217,11 +213,12 @@ function Library.CreateLib(name, themeName)
         if #allTabs == 1 then selectTab(obj) end
 
         local Tab = {}
-        function Tab:Size(str) Window:Size(str) end
+        -- Вызов размера через точку!
+        function Tab.Size(str) Window.Size(str) end
 
-        function Tab:NewSection(sectionName)
-            -- СЕКЦИЯ ТОЖЕ С ЗАКРУГЛЕНИЯМИ
-            local sec = new("Frame", {Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, Parent = page})
+        function Tab.NewSection(sectionName)
+            -- Ширина 1,-8 чтобы не вылезать за скроллбар
+            local sec = new("Frame", {Size = UDim2.new(1, -8, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, Parent = page})
             corner(sec, 10)
             setC(sec, "BackgroundColor3", "element")
             tstroke(sec)
@@ -232,10 +229,10 @@ function Library.CreateLib(name, themeName)
             setC(title, "TextColor3", "accent")
 
             local Section = {}
-            function Section:NewButton(text, desc, callback)
+            function Section.NewButton(text, desc, callback)
                 local h = desc and 46 or 34
                 local b = new("TextButton", {Size = UDim2.new(1, 0, 0, h), Text = "", AutoButtonColor = false, Parent = inner})
-                corner(b, 8) -- Закругление для кнопок внутри
+                corner(b, 8) 
                 setC(b, "BackgroundColor3", "bg")
                 tstroke(b)
                 local lbl = new("TextLabel", {Position = UDim2.new(0, 10, 0, desc and 5 or 0), Size = UDim2.new(1, -20, 0, 18), BackgroundTransparency = 1, Font = Enum.Font.GothamMedium, Text = text, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, Parent = b})
@@ -255,11 +252,11 @@ function Library.CreateLib(name, themeName)
                 return b
             end
 
-            function Section:NewToggle(text, desc, callback)
+            function Section.NewToggle(text, desc, callback)
                 local state = false
                 local h = desc and 46 or 34
                 local f = new("Frame", {Size = UDim2.new(1, 0, 0, h), Parent = inner})
-                corner(f, 8) -- Закругление для тумблера
+                corner(f, 8) 
                 setC(f, "BackgroundColor3", "bg")
                 tstroke(f)
                 local lbl = new("TextLabel", {Position = UDim2.new(0, 10, 0, desc and 5 or 0), Size = UDim2.new(1, -60, 0, 18), BackgroundTransparency = 1, Font = Enum.Font.GothamMedium, Text = text, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, Parent = f})
@@ -292,10 +289,10 @@ function Library.CreateLib(name, themeName)
                 return f
             end
 
-            function Section:NewSlider(text, desc, maxV, minV, callback)
+            function Section.NewSlider(text, desc, maxV, minV, callback)
                 maxV = maxV or 100; minV = minV or 0
                 local f = new("Frame", {Size = UDim2.new(1, 0, 0, 52), Parent = inner})
-                corner(f, 8) -- Закругление для слайдера
+                corner(f, 8) 
                 setC(f, "BackgroundColor3", "bg")
                 tstroke(f)
                 local lbl = new("TextLabel", {Position = UDim2.new(0, 10, 0, 5), Size = UDim2.new(1, -80, 0, 18), BackgroundTransparency = 1, Font = Enum.Font.GothamMedium, Text = text, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, Parent = f})
@@ -341,7 +338,7 @@ function Library.CreateLib(name, themeName)
                 return f
             end
 
-            function Section:NewLabel(text)
+            function Section.NewLabel(text)
                 local l = new("TextLabel", {Size = UDim2.new(1, 0, 0, 20), BackgroundTransparency = 1, Font = Enum.Font.Gotham, Text = text, TextSize = 12, TextXAlignment = Enum.TextXAlignment.Left, Parent = inner})
                 setC(l, "TextColor3", "subtext")
                 return l
@@ -352,7 +349,7 @@ function Library.CreateLib(name, themeName)
         return Tab
     end
 
-    function Window:Toggle()
+    function Window.Toggle()
         Window.IsOpen = not Window.IsOpen
         if Window.IsOpen then
             win.Visible = true
@@ -365,11 +362,11 @@ function Library.CreateLib(name, themeName)
             win.Visible = false
         end
     end
-    function Window:Destroy() sg:Destroy() end
+    function Window.Destroy() sg:Destroy() end
 
     UserInputService.InputBegan:Connect(function(i, gp)
         if gp then return end
-        if i.KeyCode == Enum.KeyCode.RightShift then Window:Toggle() end
+        if i.KeyCode == Enum.KeyCode.RightShift then Window.Toggle() end
     end)
 
     return Window
