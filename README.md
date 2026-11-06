@@ -95,7 +95,7 @@ Section:NewLabel("Добро пожаловать в NewUp UI v13")
 Полный пример:
 
 lua
-local Library = loadstring(game:HttpGet("ССЫЛКА_НА_СКРИПТ"))()
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/brownik87-arch/NewUpLib/refs/heads/main/NewUpLib.lua"))()
 
 local Window = Library.CreateLib("NewUp Demo", "Tem1")
 Window.Size("600x450")
