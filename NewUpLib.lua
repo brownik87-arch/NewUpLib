@@ -1,5 +1,5 @@
 -- ══════════════════════════════════════════════════════════════
---  NewUp UI Library v7 | ФИНАЛЬНЫЙ ФИКС ВСЕХ 4 УГЛОВ
+--  NewUp UI Library v8 | Круглые кнопки, вкладки и секции
 -- ══════════════════════════════════════════════════════════════
 local Library = {}
 local TweenService = game:GetService("TweenService")
@@ -87,17 +87,17 @@ function Library.CreateLib(name, themeName)
     setC(win, "BackgroundColor3", "bg")
     tstroke(win)
 
-    -- Сайдбар (ТЕПЕРЬ С ЗАКРУГЛЕНИЕМ И МАСКОЙ)
+    -- Сайдбар
     local sidebar = new("Frame", {Size = UDim2.new(0, 150, 1, 0), BorderSizePixel = 0, Parent = win, ZIndex = 1})
     corner(sidebar, 12)
     setC(sidebar, "BackgroundColor3", "sidebar")
     
-    -- Маска, чтобы правые углы сайдбара были прямыми (прилегали к контенту)
+    -- Маска, чтобы правые углы сайдбара были прямыми
     local sbMask = new("Frame", {Position = UDim2.new(1, -12, 0, 0), Size = UDim2.new(0, 12, 1, 0), BorderSizePixel = 0, ZIndex = 1, Parent = sidebar})
     setC(sbMask, "BackgroundColor3", "sidebar")
 
-    -- Разделитель
-    local divider = new("Frame", {Position = UDim2.new(0, 150, 0, 0), Size = UDim2.new(0, 1, 1, 0), BorderSizePixel = 0, ZIndex = 3, Parent = win})
+    -- Разделитель (сделал чуть короче сверху и снизу)
+    local divider = new("Frame", {Position = UDim2.new(0, 150, 0, 8), Size = UDim2.new(0, 1, 1, -16), BorderSizePixel = 0, ZIndex = 3, Parent = win})
     setC(divider, "BackgroundColor3", "stroke")
 
     local titleLbl = new("TextLabel", {Position = UDim2.new(0, 16, 0, 16), Size = UDim2.new(1, -32, 0, 20), BackgroundTransparency = 1, Font = Enum.Font.GothamBold, Text = name, TextSize = 16, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 4, Parent = sidebar})
@@ -106,10 +106,11 @@ function Library.CreateLib(name, themeName)
     setC(subLbl, "TextColor3", "subtext")
 
     local tabList = new("Frame", {Position = UDim2.new(0, 0, 0, 62), Size = UDim2.new(1, 0, 1, -62), BackgroundTransparency = 1, ZIndex = 4, Parent = sidebar})
-    new("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 2), Parent = tabList})
-    new("UIPadding", {PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8), PaddingTop = UDim.new(0, 4), Parent = tabList})
+    new("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 4), Parent = tabList})
+    -- ДОБАВИЛ ОТСТУПЫ ПО 10 ПИКСЕЛЕЙ, ЧТОБЫ КНОПКИ БЫЛИ ПО ЦЕНТРУ И ВИДНЫ ЗАКРУГЛЕНИЯ
+    new("UIPadding", {PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10), PaddingTop = UDim.new(0, 4), Parent = tabList})
 
-    -- Контент (Скролл-фрейм) - ЕМУ ТОЖЕ ДАЁМ УГОЛ
+    -- Контент (Скролл-фрейм)
     local content = new("ScrollingFrame", {
         Position = UDim2.new(0, 151, 0, 0), Size = UDim2.new(1, -151, 1, 0),
         BackgroundTransparency = 1, BorderSizePixel = 0, ScrollBarThickness = 4,
@@ -137,7 +138,7 @@ function Library.CreateLib(name, themeName)
         if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then drag = false end
     end)
 
-    -- Ресайз-хэндл (сдвинут чуть внутрь, чтобы не резался)
+    -- Ресайз-хэндл
     local resizeHandle = new("TextButton", {
         AnchorPoint = Vector2.new(1, 1), Position = UDim2.new(1, -4, 1, -4),
         Size = UDim2.new(0, 18, 0, 18), BackgroundTransparency = 1,
@@ -199,7 +200,8 @@ function Library.CreateLib(name, themeName)
             Font = Enum.Font.GothamMedium, TextXAlignment = Enum.TextXAlignment.Left,
             AutoButtonColor = false, Parent = tabList,
         })
-        corner(btn, 6)
+        -- ТЕ САМЫЕ ЗАКРУГЛЕНИЯ ДЛЯ КНОПОК (8 пикселей)
+        corner(btn, 8) 
         setC(btn, "BackgroundColor3", "sidebar")
         setC(btn, "TextColor3", "subtext")
 
@@ -218,6 +220,7 @@ function Library.CreateLib(name, themeName)
         function Tab:Size(str) Window:Size(str) end
 
         function Tab:NewSection(sectionName)
+            -- СЕКЦИЯ ТОЖЕ С ЗАКРУГЛЕНИЯМИ
             local sec = new("Frame", {Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, Parent = page})
             corner(sec, 10)
             setC(sec, "BackgroundColor3", "element")
@@ -232,7 +235,7 @@ function Library.CreateLib(name, themeName)
             function Section:NewButton(text, desc, callback)
                 local h = desc and 46 or 34
                 local b = new("TextButton", {Size = UDim2.new(1, 0, 0, h), Text = "", AutoButtonColor = false, Parent = inner})
-                corner(b, 6)
+                corner(b, 8) -- Закругление для кнопок внутри
                 setC(b, "BackgroundColor3", "bg")
                 tstroke(b)
                 local lbl = new("TextLabel", {Position = UDim2.new(0, 10, 0, desc and 5 or 0), Size = UDim2.new(1, -20, 0, 18), BackgroundTransparency = 1, Font = Enum.Font.GothamMedium, Text = text, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, Parent = b})
@@ -256,7 +259,7 @@ function Library.CreateLib(name, themeName)
                 local state = false
                 local h = desc and 46 or 34
                 local f = new("Frame", {Size = UDim2.new(1, 0, 0, h), Parent = inner})
-                corner(f, 6)
+                corner(f, 8) -- Закругление для тумблера
                 setC(f, "BackgroundColor3", "bg")
                 tstroke(f)
                 local lbl = new("TextLabel", {Position = UDim2.new(0, 10, 0, desc and 5 or 0), Size = UDim2.new(1, -60, 0, 18), BackgroundTransparency = 1, Font = Enum.Font.GothamMedium, Text = text, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, Parent = f})
@@ -292,7 +295,7 @@ function Library.CreateLib(name, themeName)
             function Section:NewSlider(text, desc, maxV, minV, callback)
                 maxV = maxV or 100; minV = minV or 0
                 local f = new("Frame", {Size = UDim2.new(1, 0, 0, 52), Parent = inner})
-                corner(f, 6)
+                corner(f, 8) -- Закругление для слайдера
                 setC(f, "BackgroundColor3", "bg")
                 tstroke(f)
                 local lbl = new("TextLabel", {Position = UDim2.new(0, 10, 0, 5), Size = UDim2.new(1, -80, 0, 18), BackgroundTransparency = 1, Font = Enum.Font.GothamMedium, Text = text, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, Parent = f})
