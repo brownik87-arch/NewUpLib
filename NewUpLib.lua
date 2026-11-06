@@ -1,5 +1,5 @@
 -- ══════════════════════════════════════════════════════════════
---  NewUp UI Library v6 | ФИНАЛЬНЫЙ ФИКС УГЛОВ + Tab:Size()
+--  NewUp UI Library v7 | ФИНАЛЬНЫЙ ФИКС ВСЕХ 4 УГЛОВ
 -- ══════════════════════════════════════════════════════════════
 local Library = {}
 local TweenService = game:GetService("TweenService")
@@ -54,7 +54,6 @@ local function applyTheme(name)
 end
 function Library:SetTheme(name) applyTheme(name) end
 
--- Утилиты
 local function new(cls, props)
     local i = Instance.new(cls)
     if props then for k, v in pairs(props) do i[k] = v end end
@@ -78,19 +77,26 @@ function Library.CreateLib(name, themeName)
     name = name or "NewUp"
     applyTheme(themeName or "Tem1")
 
+    -- Главное окно
     local win = new("Frame", {
         Name = "Window", AnchorPoint = Vector2.new(0.5, 0.5),
         Position = UDim2.new(0.5, 0, 0.5, 0), Size = UDim2.new(0, 560, 0, 400),
-        ClipsDescendants = true, Parent = sg,
+        ClipsDescendants = true, Parent = sg, ZIndex = 2,
     })
     corner(win, 12)
     setC(win, "BackgroundColor3", "bg")
     tstroke(win)
 
-    -- Сайдбар (без собственных углов, их обрежет главное окно)
-    local sidebar = new("Frame", {Size = UDim2.new(0, 150, 1, 0), BorderSizePixel = 0, Parent = win})
+    -- Сайдбар (ТЕПЕРЬ С ЗАКРУГЛЕНИЕМ И МАСКОЙ)
+    local sidebar = new("Frame", {Size = UDim2.new(0, 150, 1, 0), BorderSizePixel = 0, Parent = win, ZIndex = 1})
+    corner(sidebar, 12)
     setC(sidebar, "BackgroundColor3", "sidebar")
+    
+    -- Маска, чтобы правые углы сайдбара были прямыми (прилегали к контенту)
+    local sbMask = new("Frame", {Position = UDim2.new(1, -12, 0, 0), Size = UDim2.new(0, 12, 1, 0), BorderSizePixel = 0, ZIndex = 1, Parent = sidebar})
+    setC(sbMask, "BackgroundColor3", "sidebar")
 
+    -- Разделитель
     local divider = new("Frame", {Position = UDim2.new(0, 150, 0, 0), Size = UDim2.new(0, 1, 1, 0), BorderSizePixel = 0, ZIndex = 3, Parent = win})
     setC(divider, "BackgroundColor3", "stroke")
 
@@ -103,13 +109,14 @@ function Library.CreateLib(name, themeName)
     new("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 2), Parent = tabList})
     new("UIPadding", {PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8), PaddingTop = UDim.new(0, 4), Parent = tabList})
 
-    -- Контент (Скролл-фрейм). ЕМУ ТОЖЕ ДАЁМ УГОЛ, ЧТОБЫ ОН НЕ ПЕРЕКРЫВАЛ НИЖНИЙ ПРАВЫЙ КРАЙ!
+    -- Контент (Скролл-фрейм) - ЕМУ ТОЖЕ ДАЁМ УГОЛ
     local content = new("ScrollingFrame", {
         Position = UDim2.new(0, 151, 0, 0), Size = UDim2.new(1, -151, 1, 0),
         BackgroundTransparency = 1, BorderSizePixel = 0, ScrollBarThickness = 4,
         CanvasSize = UDim2.new(0, 0, 0, 0), AutomaticCanvasSize = Enum.AutomaticSize.Y, Parent = win, ZIndex = 1,
+        ClipsDescendants = true,
     })
-    corner(content, 12) -- ФИКС УГЛОВ
+    corner(content, 12) 
     setC(content, "ScrollBarImageColor3", "accent")
     new("UIPadding", {PaddingTop = UDim.new(0, 16), PaddingBottom = UDim.new(0, 16), PaddingLeft = UDim.new(0, 16), PaddingRight = UDim.new(0, 16), Parent = content})
 
@@ -130,9 +137,9 @@ function Library.CreateLib(name, themeName)
         if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then drag = false end
     end)
 
-    -- Ресайз-хэндл
+    -- Ресайз-хэндл (сдвинут чуть внутрь, чтобы не резался)
     local resizeHandle = new("TextButton", {
-        AnchorPoint = Vector2.new(1, 1), Position = UDim2.new(1, -2, 1, -2),
+        AnchorPoint = Vector2.new(1, 1), Position = UDim2.new(1, -4, 1, -4),
         Size = UDim2.new(0, 18, 0, 18), BackgroundTransparency = 1,
         Text = "◢", Font = Enum.Font.GothamBold, TextSize = 14, ZIndex = 10, Parent = win,
     })
@@ -160,7 +167,6 @@ function Library.CreateLib(name, themeName)
     local allTabs = {}
     local lastSize = UDim2.new(0, 560, 0, 400)
 
-    -- ФУНКЦИЯ РАЗМЕРА (поддерживает строку "400x300")
     function Window:Size(sizeStr)
         if type(sizeStr) == "string" then
             local w, h = string.match(sizeStr, "(%d+)x(%d+)")
@@ -209,7 +215,6 @@ function Library.CreateLib(name, themeName)
         if #allTabs == 1 then selectTab(obj) end
 
         local Tab = {}
-        -- ТА САМАЯ ФУНКЦИЯ ДЛЯ ТАБА
         function Tab:Size(str) Window:Size(str) end
 
         function Tab:NewSection(sectionName)
