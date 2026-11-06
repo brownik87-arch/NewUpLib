@@ -1,5 +1,5 @@
 -- ══════════════════════════════════════════════════════════════
---  NewUp UI Library v4  |  Фикс углов + Ресайз окна
+--  NewUp UI Library v5 | Фикс углов + Удобный ресайз
 -- ══════════════════════════════════════════════════════════════
 local Library = {}
 local TweenService = game:GetService("TweenService")
@@ -38,10 +38,7 @@ local Themes = {
     Tem9 = {name="Tem9 · Чёрный", bg=Color3.fromRGB(0,0,0), sidebar=Color3.fromRGB(6,6,6), element=Color3.fromRGB(16,16,16), elementHover=Color3.fromRGB(26,26,26), accent=Color3.fromRGB(220,220,220), text=Color3.fromRGB(245,245,245), subtext=Color3.fromRGB(140,140,140), stroke=Color3.fromRGB(32,32,32)},
     Tem10 = {name="Tem10 · Светлый", bg=Color3.fromRGB(245,245,248), sidebar=Color3.fromRGB(228,228,236), element=Color3.fromRGB(214,214,226), elementHover=Color3.fromRGB(198,198,214), accent=Color3.fromRGB(110,70,220), text=Color3.fromRGB(25,25,40), subtext=Color3.fromRGB(90,90,115), stroke=Color3.fromRGB(190,190,208)},
 }
-Themes.RJTheme1 = Themes.Tem1
-Themes.RJTheme2 = Themes.Tem2
-Themes.RJTheme3 = Themes.Tem3
-Themes.RJTheme4 = Themes.Tem4
+Themes.RJTheme1 = Themes.Tem1; Themes.RJTheme2 = Themes.Tem2; Themes.RJTheme3 = Themes.Tem3; Themes.RJTheme4 = Themes.Tem4
 
 local CurrentTheme = Themes.Tem1
 local themeRegistry = {}
@@ -52,9 +49,7 @@ end
 local function applyTheme(name)
     CurrentTheme = Themes[name] or Themes.Tem1
     for _, r in ipairs(themeRegistry) do
-        pcall(function()
-            if r.inst and r.inst.Parent then r.inst[r.prop] = CurrentTheme[r.role] end
-        end)
+        pcall(function() if r.inst and r.inst.Parent then r.inst[r.prop] = CurrentTheme[r.role] end end)
     end
 end
 function Library:SetTheme(name) applyTheme(name) end
@@ -92,10 +87,7 @@ new("UIListLayout", {
 function Library:Notify(title, content, duration)
     duration = duration or 3
     local T = CurrentTheme
-    local card = new("Frame", {
-        Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y,
-        BackgroundColor3 = T.bg, ClipsDescendants = true, Parent = notifStack,
-    })
+    local card = new("Frame", {Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundColor3 = T.bg, ClipsDescendants = true, Parent = notifStack})
     corner(card, 10)
     new("UIStroke", {Thickness = 1, ApplyStrokeMode = Enum.ApplyStrokeMode.Border, Color = T.stroke, Parent = card})
     new("Frame", {Size = UDim2.new(0, 3, 1, 0), BackgroundColor3 = T.accent, BorderSizePixel = 0, Parent = card})
@@ -129,20 +121,25 @@ function Library.CreateLib(name, themeName)
     setC(win, "BackgroundColor3", "bg")
     tstroke(win)
 
-    -- Сайдбар (ТЕПЕРЬ БЕЗ СОБСТВЕННЫХ УГЛОВ, их обрежет окно)
+    -- Сайдбар (теперь с закруглениями!)
     local sidebar = new("Frame", {Size = UDim2.new(0, 150, 1, 0), BorderSizePixel = 0, Parent = win})
+    corner(sidebar, 12) -- Закругляем сайдбар, чтобы нижний левый угол был красивым
     setC(sidebar, "BackgroundColor3", "sidebar")
 
-    -- Разделитель (прямо в окне)
-    local divider = new("Frame", {Position = UDim2.new(0, 150, 0, 0), Size = UDim2.new(0, 1, 1, 0), BorderSizePixel = 0, Parent = win})
+    -- Заглушка, чтобы правые углы сайдбара были прямыми
+    local sbMask = new("Frame", {Position = UDim2.new(1, -12, 0, 0), Size = UDim2.new(0, 12, 1, 0), BorderSizePixel = 0, ZIndex = 2, Parent = sidebar})
+    setC(sbMask, "BackgroundColor3", "sidebar")
+
+    -- Разделитель (сдвинут вправо на 1 пиксель)
+    local divider = new("Frame", {Position = UDim2.new(0, 150, 0, 0), Size = UDim2.new(0, 1, 1, 0), BorderSizePixel = 0, ZIndex = 3, Parent = win})
     setC(divider, "BackgroundColor3", "stroke")
 
-    local titleLbl = new("TextLabel", {Position = UDim2.new(0, 16, 0, 16), Size = UDim2.new(1, -32, 0, 20), BackgroundTransparency = 1, Font = Enum.Font.GothamBold, Text = name, TextSize = 16, TextXAlignment = Enum.TextXAlignment.Left, Parent = sidebar})
+    local titleLbl = new("TextLabel", {Position = UDim2.new(0, 16, 0, 16), Size = UDim2.new(1, -32, 0, 20), BackgroundTransparency = 1, Font = Enum.Font.GothamBold, Text = name, TextSize = 16, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 4, Parent = sidebar})
     setC(titleLbl, "TextColor3", "text")
-    local subLbl = new("TextLabel", {Position = UDim2.new(0, 16, 0, 36), Size = UDim2.new(1, -32, 0, 14), BackgroundTransparency = 1, Font = Enum.Font.Gotham, Text = "by VordAudi", TextSize = 11, TextXAlignment = Enum.TextXAlignment.Left, Parent = sidebar})
+    local subLbl = new("TextLabel", {Position = UDim2.new(0, 16, 0, 36), Size = UDim2.new(1, -32, 0, 14), BackgroundTransparency = 1, Font = Enum.Font.Gotham, Text = "by VordAudi", TextSize = 11, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 4, Parent = sidebar})
     setC(subLbl, "TextColor3", "subtext")
 
-    local tabList = new("Frame", {Position = UDim2.new(0, 0, 0, 62), Size = UDim2.new(1, 0, 1, -62), BackgroundTransparency = 1, Parent = sidebar})
+    local tabList = new("Frame", {Position = UDim2.new(0, 0, 0, 62), Size = UDim2.new(1, 0, 1, -62), BackgroundTransparency = 1, ZIndex = 4, Parent = sidebar})
     new("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 2), Parent = tabList})
     new("UIPadding", {PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8), PaddingTop = UDim.new(0, 4), Parent = tabList})
 
@@ -150,7 +147,7 @@ function Library.CreateLib(name, themeName)
     local content = new("ScrollingFrame", {
         Position = UDim2.new(0, 151, 0, 0), Size = UDim2.new(1, -151, 1, 0),
         BackgroundTransparency = 1, BorderSizePixel = 0, ScrollBarThickness = 4,
-        CanvasSize = UDim2.new(0, 0, 0, 0), AutomaticCanvasSize = Enum.AutomaticSize.Y, Parent = win,
+        CanvasSize = UDim2.new(0, 0, 0, 0), AutomaticCanvasSize = Enum.AutomaticSize.Y, Parent = win, ZIndex = 1,
     })
     setC(content, "ScrollBarImageColor3", "accent")
     new("UIPadding", {PaddingTop = UDim.new(0, 16), PaddingBottom = UDim.new(0, 16), PaddingLeft = UDim.new(0, 16), PaddingRight = UDim.new(0, 16), Parent = content})
@@ -174,8 +171,8 @@ function Library.CreateLib(name, themeName)
 
     -- Ресайз-хэндл (правый нижний угол)
     local resizeHandle = new("TextButton", {
-        AnchorPoint = Vector2.new(1, 1), Position = UDim2.new(1, -4, 1, -4),
-        Size = UDim2.new(0, 16, 0, 16), BackgroundTransparency = 1,
+        AnchorPoint = Vector2.new(1, 1), Position = UDim2.new(1, -2, 1, -2),
+        Size = UDim2.new(0, 18, 0, 18), BackgroundTransparency = 1,
         Text = "◢", Font = Enum.Font.GothamBold, TextSize = 14, ZIndex = 10, Parent = win,
     })
     setC(resizeHandle, "TextColor3", "subtext")
@@ -196,11 +193,25 @@ function Library.CreateLib(name, themeName)
         if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then resizing = false end
     end)
 
-    -- API
+    -- API окна
     local Window = {}
     Window.IsOpen = true
     local allTabs = {}
     local lastSize = UDim2.new(0, 560, 0, 400)
+
+    -- ТА САМАЯ ФУНКЦИЯ РАЗМЕРА
+    function Window:Size(sizeStr)
+        if type(sizeStr) == "string" then
+            local w, h = string.match(sizeStr, "(%d+)x(%d+)")
+            if w and h then
+                win.Size = UDim2.new(0, tonumber(w), 0, tonumber(h))
+                lastSize = win.Size
+            end
+        elseif type(sizeStr) == "number" then
+            win.Size = UDim2.new(0, sizeStr, 0, sizeStr)
+            lastSize = win.Size
+        end
+    end
 
     local function selectTab(t)
         for _, o in ipairs(allTabs) do
@@ -215,11 +226,6 @@ function Library.CreateLib(name, themeName)
 
     function Window:SetTheme(themeName) applyTheme(themeName) end
     
-    -- ФУНКЦИИ ИЗМЕНЕНИЯ РАЗМЕРА
-    function Window:SetSize(w, h) win.Size = UDim2.new(0, w, 0, h); lastSize = win.Size end
-    function Window:SetWidth(w) win.Size = UDim2.new(0, w, 0, win.AbsoluteSize.Y); lastSize = win.Size end
-    function Window:SetHeight(h) win.Size = UDim2.new(0, win.AbsoluteSize.X, 0, h); lastSize = win.Size end
-
     function Window:NewTab(tabName)
         local btn = new("TextButton", {
             Size = UDim2.new(1, 0, 0, 32), Text = "  "..tabName, TextSize = 13,
@@ -242,6 +248,10 @@ function Library.CreateLib(name, themeName)
         if #allTabs == 1 then selectTab(obj) end
 
         local Tab = {}
+        
+        -- Позволяем вызывать Size прямо из таба (как ты и просил)
+        function Tab:Size(str) Window:Size(str) end
+
         function Tab:NewSection(sectionName)
             local sec = new("Frame", {Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, Parent = page})
             corner(sec, 10)
