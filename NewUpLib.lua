@@ -1,5 +1,5 @@
 -- ══════════════════════════════════════════════════════════════
---  NewUp UI Library v11 | ПОЛНЫЙ ФИКС КРАЕВ И ТЕКСТА
+--  NewUp UI Library v12 | ФИКС ТЕКСТА И ПРАВОГО УГЛА
 -- ══════════════════════════════════════════════════════════════
 local Library = {}
 local TweenService = game:GetService("TweenService")
@@ -105,18 +105,19 @@ function Library.CreateLib(name, themeName)
     new("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 4), Parent = tabList})
     new("UIPadding", {PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10), PaddingTop = UDim.new(0, 4), Parent = tabList})
 
-    -- Контент (ФИКС: запрет горизонтальной прокрутки и правильный CanvasSize)
+    -- КОНТЕНТ (Полный запрет горизонтальной прокрутки и безопасные отступы)
     local content = new("ScrollingFrame", {
         Position = UDim2.new(0, 151, 0, 0), Size = UDim2.new(1, -151, 1, 0),
         BackgroundTransparency = 1, BorderSizePixel = 0, ScrollBarThickness = 4,
-        CanvasSize = UDim2.new(1, 0, 0, 0), AutomaticCanvasSize = Enum.AutomaticSize.Y, 
-        ScrollingDirection = Enum.ScrollingDirection.Y, -- ТОЛЬКО ВНИЗ
+        CanvasSize = UDim2.new(0, 0, 0, 0), 
+        AutomaticCanvasSize = Enum.AutomaticSize.Y, 
+        ScrollingDirection = Enum.ScrollingDirection.Y, -- ЖЕСТКО ТОЛЬКО ВНИЗ
         Parent = win, ZIndex = 1, ClipsDescendants = true,
     })
     corner(content, 12) 
     setC(content, "ScrollBarImageColor3", "accent")
-    -- Одинаковые отступы слева и справа
-    new("UIPadding", {PaddingTop = UDim.new(0, 16), PaddingBottom = UDim.new(0, 16), PaddingLeft = UDim.new(0, 16), PaddingRight = UDim.new(0, 16), Parent = content})
+    -- Отступ справа больше, чтобы скроллбар не наезжал на закругление
+    new("UIPadding", {PaddingTop = UDim.new(0, 16), PaddingBottom = UDim.new(0, 16), PaddingLeft = UDim.new(0, 16), PaddingRight = UDim.new(0, 20), Parent = content})
 
     -- Перетаскивание
     local drag, dragS, startP
@@ -205,8 +206,7 @@ function Library.CreateLib(name, themeName)
             Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y,
             BackgroundTransparency = 1, Visible = false, Parent = content,
         })
-        -- Центрируем элементы
-        new("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 12), HorizontalAlignment = Enum.HorizontalAlignment.Center, Parent = page})
+        new("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 12), Parent = page})
 
         local obj = {btn = btn, page = page}
         table.insert(allTabs, obj)
@@ -217,7 +217,6 @@ function Library.CreateLib(name, themeName)
         function Tab.Size(str) Window.Size(str) end
 
         function Tab:NewSection(sectionName)
-            -- Ширина 1,0 (занимает всю ширину page, с учетом отступов)
             local sec = new("Frame", {Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, Parent = page})
             corner(sec, 10)
             setC(sec, "BackgroundColor3", "element")
@@ -225,7 +224,9 @@ function Library.CreateLib(name, themeName)
             new("UIPadding", {PaddingTop = UDim.new(0, 10), PaddingBottom = UDim.new(0, 10), PaddingLeft = UDim.new(0, 12), PaddingRight = UDim.new(0, 12), Parent = sec})
             local inner = new("Frame", {Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, Parent = sec})
             new("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 6), Parent = inner})
-            local title = new("TextLabel", {Size = UDim2.new(1, 0, 0, 20), BackgroundTransparency = 1, Font = Enum.Font.GothamBold, Text = sectionName, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, LayoutOrder = -1, Parent = inner})
+            
+            -- Текст заголовка (фикс срезания)
+            local title = new("TextLabel", {Position = UDim2.new(0, 0, 0, 0), Size = UDim2.new(1, 0, 0, 20), BackgroundTransparency = 1, Font = Enum.Font.GothamBold, Text = sectionName, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, LayoutOrder = -1, Parent = inner})
             setC(title, "TextColor3", "accent")
 
             local Section = {}
