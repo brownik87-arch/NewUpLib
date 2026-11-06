@@ -1,5 +1,5 @@
 -- ══════════════════════════════════════════════════════════════
---  NewUp UI Library v12 | ФИКС ТЕКСТА И ПРАВОГО УГЛА
+-- NewUp UI Library v13 | АНИМАЦИЯ КНОПОК (RIPPLE + FLASH)
 -- ══════════════════════════════════════════════════════════════
 local Library = {}
 local TweenService = game:GetService("TweenService")
@@ -89,7 +89,7 @@ function Library.CreateLib(name, themeName)
     local sidebar = new("Frame", {Size = UDim2.new(0, 150, 1, 0), BorderSizePixel = 0, Parent = win, ZIndex = 1})
     corner(sidebar, 12)
     setC(sidebar, "BackgroundColor3", "sidebar")
-    
+
     local sbMask = new("Frame", {Position = UDim2.new(1, -12, 0, 0), Size = UDim2.new(0, 12, 1, 0), BorderSizePixel = 0, ZIndex = 1, Parent = sidebar})
     setC(sbMask, "BackgroundColor3", "sidebar")
 
@@ -105,18 +105,17 @@ function Library.CreateLib(name, themeName)
     new("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 4), Parent = tabList})
     new("UIPadding", {PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10), PaddingTop = UDim.new(0, 4), Parent = tabList})
 
-    -- КОНТЕНТ (Полный запрет горизонтальной прокрутки и безопасные отступы)
+    -- КОНТЕНТ
     local content = new("ScrollingFrame", {
         Position = UDim2.new(0, 151, 0, 0), Size = UDim2.new(1, -151, 1, 0),
         BackgroundTransparency = 1, BorderSizePixel = 0, ScrollBarThickness = 4,
-        CanvasSize = UDim2.new(0, 0, 0, 0), 
-        AutomaticCanvasSize = Enum.AutomaticSize.Y, 
-        ScrollingDirection = Enum.ScrollingDirection.Y, -- ЖЕСТКО ТОЛЬКО ВНИЗ
+        CanvasSize = UDim2.new(0, 0, 0, 0),
+        AutomaticCanvasSize = Enum.AutomaticSize.Y,
+        ScrollingDirection = Enum.ScrollingDirection.Y,
         Parent = win, ZIndex = 1, ClipsDescendants = true,
     })
-    corner(content, 12) 
+    corner(content, 12)
     setC(content, "ScrollBarImageColor3", "accent")
-    -- Отступ справа больше, чтобы скроллбар не наезжал на закругление
     new("UIPadding", {PaddingTop = UDim.new(0, 16), PaddingBottom = UDim.new(0, 16), PaddingLeft = UDim.new(0, 16), PaddingRight = UDim.new(0, 20), Parent = content})
 
     -- Перетаскивание
@@ -191,14 +190,14 @@ function Library.CreateLib(name, themeName)
     end
 
     function Window:SetTheme(themeName) applyTheme(themeName) end
-    
+
     function Window:NewTab(tabName)
         local btn = new("TextButton", {
-            Size = UDim2.new(1, 0, 0, 32), Text = "  "..tabName, TextSize = 13,
+            Size = UDim2.new(1, 0, 0, 32), Text = " "..tabName, TextSize = 13,
             Font = Enum.Font.GothamMedium, TextXAlignment = Enum.TextXAlignment.Left,
             AutoButtonColor = false, Parent = tabList,
         })
-        corner(btn, 8) 
+        corner(btn, 8)
         setC(btn, "BackgroundColor3", "sidebar")
         setC(btn, "TextColor3", "subtext")
 
@@ -224,56 +223,146 @@ function Library.CreateLib(name, themeName)
             new("UIPadding", {PaddingTop = UDim.new(0, 10), PaddingBottom = UDim.new(0, 10), PaddingLeft = UDim.new(0, 12), PaddingRight = UDim.new(0, 12), Parent = sec})
             local inner = new("Frame", {Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, Parent = sec})
             new("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 6), Parent = inner})
-            
-            -- Текст заголовка (фикс срезания)
+
             local title = new("TextLabel", {Position = UDim2.new(0, 0, 0, 0), Size = UDim2.new(1, 0, 0, 20), BackgroundTransparency = 1, Font = Enum.Font.GothamBold, Text = sectionName, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, LayoutOrder = -1, Parent = inner})
             setC(title, "TextColor3", "accent")
 
             local Section = {}
+
+            -- ═══════════ КНОПКА С АНИМАЦИЕЙ (RIPPLE + FLASH) ═══════════
             function Section:NewButton(text, desc, callback)
                 local h = desc and 46 or 34
-                local b = new("TextButton", {Size = UDim2.new(1, 0, 0, h), Text = "", AutoButtonColor = false, Parent = inner})
-                corner(b, 8) 
+                local b = new("TextButton", {
+                    Size = UDim2.new(1, 0, 0, h),
+                    Text = "",
+                    AutoButtonColor = false,
+                    Parent = inner,
+                    ClipsDescendants = true,
+                })
+                corner(b, 8)
                 setC(b, "BackgroundColor3", "bg")
                 tstroke(b)
-                local lbl = new("TextLabel", {Position = UDim2.new(0, 10, 0, desc and 5 or 0), Size = UDim2.new(1, -20, 0, 18), BackgroundTransparency = 1, Font = Enum.Font.GothamMedium, Text = text, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, Parent = b})
+
+                local lbl = new("TextLabel", {
+                    Position = UDim2.new(0, 10, 0, desc and 5 or 0),
+                    Size = UDim2.new(1, -20, 0, 18),
+                    BackgroundTransparency = 1,
+                    Font = Enum.Font.GothamMedium,
+                    Text = text, TextSize = 13,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    ZIndex = 3,
+                    Parent = b,
+                })
                 setC(lbl, "TextColor3", "text")
+
                 if desc then
-                    local dl = new("TextLabel", {Position = UDim2.new(0, 10, 0, 23), Size = UDim2.new(1, -20, 0, 16), BackgroundTransparency = 1, Font = Enum.Font.Gotham, Text = desc, TextSize = 11, TextXAlignment = Enum.TextXAlignment.Left, Parent = b})
+                    local dl = new("TextLabel", {
+                        Position = UDim2.new(0, 10, 0, 23),
+                        Size = UDim2.new(1, -20, 0, 16),
+                        BackgroundTransparency = 1,
+                        Font = Enum.Font.Gotham,
+                        Text = desc, TextSize = 11,
+                        TextXAlignment = Enum.TextXAlignment.Left,
+                        ZIndex = 3,
+                        Parent = b,
+                    })
                     setC(dl, "TextColor3", "subtext")
                 end
+
                 b.MouseEnter:Connect(function() tw(b, {BackgroundColor3 = CurrentTheme.elementHover}, 0.1) end)
                 b.MouseLeave:Connect(function() tw(b, {BackgroundColor3 = CurrentTheme.bg}, 0.1) end)
+
+                -- Ripple + flash
+                local function playPressAnim(clickX, clickY)
+                    local ripple = new("Frame", {
+                        AnchorPoint = Vector2.new(0.5, 0.5),
+                        Position    = UDim2.new(0, clickX, 0, clickY),
+                        Size        = UDim2.new(0, 0, 0, 0),
+                        BackgroundColor3 = CurrentTheme.accent,
+                        BackgroundTransparency = 0.55,
+                        BorderSizePixel = 0,
+                        ZIndex = 2,
+                        Parent = b,
+                    })
+                    corner(ripple, 999)
+                    local maxSize = math.max(b.AbsoluteSize.X, b.AbsoluteSize.Y) * 2.4
+                    TweenService:Create(ripple,
+                        TweenInfo.new(0.55, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                        {
+                            Size = UDim2.new(0, maxSize, 0, maxSize),
+                            BackgroundTransparency = 1,
+                        }
+                    ):Play()
+                    task.delay(0.6, function()
+                        if ripple and ripple.Parent then ripple:Destroy() end
+                    end)
+
+                    tw(b, {BackgroundColor3 = CurrentTheme.accent}, 0.08)
+                    task.delay(0.09, function()
+                        if b and b.Parent then
+                            tw(b, {BackgroundColor3 = CurrentTheme.elementHover}, 0.2)
+                        end
+                    end)
+                end
+
+                b.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1
+                    or input.UserInputType == Enum.UserInputType.Touch then
+                        local cx = input.Position.X - b.AbsolutePosition.X
+                        local cy = input.Position.Y - b.AbsolutePosition.Y
+                        playPressAnim(cx, cy)
+                    end
+                end)
+
                 b.MouseButton1Click:Connect(function()
                     if callback then
                         local ok, err = pcall(callback)
                         if not ok then warn("[NewUp] Button: "..tostring(err)) end
                     end
                 end)
+
                 return b
             end
 
             function Section:NewToggle(text, desc, callback)
                 local state = false
                 local h = desc and 46 or 34
-                local f = new("Frame", {Size = UDim2.new(1, 0, 0, h), Parent = inner})
-                corner(f, 8) 
+                local f = new("Frame", {Size = UDim2.new(1, 0, 0, h), Parent = inner, ClipsDescendants = true})
+                corner(f, 8)
                 setC(f, "BackgroundColor3", "bg")
                 tstroke(f)
-                local lbl = new("TextLabel", {Position = UDim2.new(0, 10, 0, desc and 5 or 0), Size = UDim2.new(1, -60, 0, 18), BackgroundTransparency = 1, Font = Enum.Font.GothamMedium, Text = text, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, Parent = f})
+                local lbl = new("TextLabel", {Position = UDim2.new(0, 10, 0, desc and 5 or 0), Size = UDim2.new(1, -60, 0, 18), BackgroundTransparency = 1, Font = Enum.Font.GothamMedium, Text = text, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 3, Parent = f})
                 setC(lbl, "TextColor3", "text")
                 if desc then
-                    local dl = new("TextLabel", {Position = UDim2.new(0, 10, 0, 23), Size = UDim2.new(1, -60, 0, 16), BackgroundTransparency = 1, Font = Enum.Font.Gotham, Text = desc, TextSize = 11, TextXAlignment = Enum.TextXAlignment.Left, Parent = f})
+                    local dl = new("TextLabel", {Position = UDim2.new(0, 10, 0, 23), Size = UDim2.new(1, -60, 0, 16), BackgroundTransparency = 1, Font = Enum.Font.Gotham, Text = desc, TextSize = 11, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 3, Parent = f})
                     setC(dl, "TextColor3", "subtext")
                 end
-                local sw = new("Frame", {AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -10, 0.5, 0), Size = UDim2.new(0, 34, 0, 18), Parent = f})
+                local sw = new("Frame", {AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -10, 0.5, 0), Size = UDim2.new(0, 34, 0, 18), ZIndex = 2, Parent = f})
                 corner(sw, 9)
                 setC(sw, "BackgroundColor3", "elementHover")
-                local knob = new("Frame", {AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 2, 0.5, 0), Size = UDim2.new(0, 14, 0, 14), Parent = sw})
+                local knob = new("Frame", {AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 2, 0.5, 0), Size = UDim2.new(0, 14, 0, 14), ZIndex = 3, Parent = sw})
                 corner(knob, 7)
                 setC(knob, "BackgroundColor3", "subtext")
-                local hit = new("TextButton", {Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, Text = "", Parent = f})
+                local hit = new("TextButton", {Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, Text = "", ZIndex = 4, Parent = f})
+
                 hit.MouseButton1Click:Connect(function()
+                    -- Ripple для toggle
+                    local rip = new("Frame", {
+                        AnchorPoint = Vector2.new(0.5,0.5),
+                        Position = UDim2.new(0.5,0,0.5,0),
+                        Size = UDim2.new(0,0,0,0),
+                        BackgroundColor3 = CurrentTheme.accent,
+                        BackgroundTransparency = 0.55,
+                        BorderSizePixel = 0,
+                        ZIndex = 2,
+                        Parent = f,
+                    })
+                    corner(rip, 999)
+                    local mx = math.max(f.AbsoluteSize.X, f.AbsoluteSize.Y) * 2.2
+                    TweenService:Create(rip, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                        {Size = UDim2.new(0,mx,0,mx), BackgroundTransparency = 1}):Play()
+                    task.delay(0.55, function() if rip and rip.Parent then rip:Destroy() end end)
+
                     state = not state
                     if state then
                         tw(sw, {BackgroundColor3 = CurrentTheme.accent}, 0.15)
@@ -293,7 +382,7 @@ function Library.CreateLib(name, themeName)
             function Section:NewSlider(text, desc, maxV, minV, callback)
                 maxV = maxV or 100; minV = minV or 0
                 local f = new("Frame", {Size = UDim2.new(1, 0, 0, 52), Parent = inner})
-                corner(f, 8) 
+                corner(f, 8)
                 setC(f, "BackgroundColor3", "bg")
                 tstroke(f)
                 local lbl = new("TextLabel", {Position = UDim2.new(0, 10, 0, 5), Size = UDim2.new(1, -80, 0, 18), BackgroundTransparency = 1, Font = Enum.Font.GothamMedium, Text = text, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, Parent = f})
